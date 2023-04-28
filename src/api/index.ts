@@ -1,7 +1,8 @@
-import type { App } from "vue";
-import generateDefaultData from "./defaultData";
-import { StoreData } from "./API";
+import { sleep } from "@/utils";
 import { nanoid } from "nanoid";
+import type { App } from "vue";
+import { StoreData } from "./API";
+import generateDefaultData from "./defaultData";
 
 const STORE_KEY = "API_STORE";
 
@@ -22,6 +23,7 @@ export class ApiStore {
   }
 
   public async getData(page: number, pageSize = 10) {
+    await sleep(500);
     return {
       data: this.store.slice((page - 1) * pageSize, page * pageSize),
       currentPage: page,
@@ -35,6 +37,9 @@ export class ApiStore {
     if (findIndex >= 0) {
       this.store.splice(findIndex, 1);
       this.syncStorage();
+      await sleep(500);
+    } else {
+      throw new Error("Can't find target id!");
     }
   }
 
@@ -44,6 +49,7 @@ export class ApiStore {
       id: nanoid(),
     });
     this.syncStorage();
+    await sleep(500);
   }
 
   public async update(data: StoreData) {
@@ -51,6 +57,9 @@ export class ApiStore {
     if (findIndex >= 0) {
       this.store[findIndex] = data;
       this.syncStorage();
+      await sleep(500);
+    } else {
+      throw new Error("Can't find target id!");
     }
   }
 }
