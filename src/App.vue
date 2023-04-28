@@ -54,10 +54,13 @@
               </el-table-column>
             </el-table>
             <el-pagination
-              v-model:current-page="currentPage"
+              v-model:current-page="pagination.currentPage"
+              v-model:page-size="pagination.pageSize"
               :page-sizes="[10, 20, 50]"
-              :page-size="pageSize"
-              :total="total"
+              :total="pagination.total"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              layout="sizes, prev, pager, next, total"
             />
             <el-dialog v-model:visible="dialogVisible" title="编辑用户信息">
               <el-form :model="editForm" ref="ruleFormRef" label-width="80px">
@@ -75,17 +78,11 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
+import { getCurrentInstance, reactive, ref } from "vue";
 import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
-
-interface DataItem {
-  client: string;
-  board: string;
-  tags: string;
-  requestor: string;
-  script: string;
-  actions: string;
-}
+import type { ApiStore } from "./api";
+import { StoreData } from "./api/API";
+import { usePagination } from "./hooks/usePagination";
 
 const defaultActiveKey = "sdk";
 
@@ -102,26 +99,34 @@ const handleSelect = (index: MenuKey) => {
   selectMenuKey.value = index;
 };
 
-const item: DataItem = {
-  client: "2016-05-02",
-  board: "",
-  tags: "No. 189, Grove St, Los Angeles",
-  requestor: "No. 189, Grove St, Los Angeles",
-  script: "No. 189, Grove St, Los Angeles",
-  actions: "No. 189, Grove St, Los Angeles",
-};
-const tableData = ref(Array.from({ length: 20 }).fill(item));
+/** 获取install的api实例 */
+const instance = getCurrentInstance()!;
+const $api: ApiStore = instance.appContext.config.globalProperties.$api;
+console.log("$api", $api);
 
-const total = ref(0);
-const currentPage = ref(1);
-const pageSize = ref(10);
+/** 表格数据及分页hook */
+const {
+  data: tableData,
+  pagination,
+  handleSizeChange,
+  handleCurrentChange,
+} = usePagination<StoreData>(async (page, size) => {
+  const res = await $api.getData(page, size);
+  console.log("res", res);
+  return {
+    data: res.data,
+    page: res.currentPage,
+    pageSize: res.pageSize,
+    total: res.total,
+  };
+});
 
 const searchValue = ref<string>("");
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const addNew = () => {};
 const ruleFormRef = ref<FormInstance>();
-const editForm = reactive<DataItem>({
+const editForm = reactive<Omit<StoreData, "id">>({
   client: "",
   board: "",
   tags: "",
@@ -143,12 +148,12 @@ const saveForm = async () => {
 };
 const dialogVisible = ref<boolean>(false);
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-const editRow = (row: DataItem) => {
+const editRow = (row: StoreData) => {
   dialogVisible.value = true;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-const deleteRow = async (row: DataItem) => {
+const deleteRow = async (row: StoreData) => {
   await ElMessageBox.confirm("Confirm to delelte data?", "Confirm", {
     type: "warning",
   });
