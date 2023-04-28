@@ -104,24 +104,30 @@ const instance = getCurrentInstance()!;
 const $api: ApiStore = instance.appContext.config.globalProperties.$api;
 console.log("$api", $api);
 
+/** 搜索 */
+const searchValue = ref<string>("");
+
 /** 表格数据及分页hook */
 const {
   data: tableData,
   pagination,
   handleSizeChange,
   handleCurrentChange,
-} = usePagination<StoreData>(async (page, size) => {
-  const res = await $api.getData(page, size);
-  console.log("res", res);
-  return {
-    data: res.data,
-    page: res.currentPage,
-    pageSize: res.pageSize,
-    total: res.total,
-  };
-});
-
-const searchValue = ref<string>("");
+} = usePagination<StoreData>(
+  async (page, size) => {
+    const res = await $api.getData(page, size);
+    console.log("res", res);
+    return {
+      data: res.data,
+      page: res.currentPage,
+      pageSize: res.pageSize,
+      total: res.total,
+    };
+  },
+  {
+    refreshDeps: [searchValue],
+  }
+);
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const addNew = () => {};

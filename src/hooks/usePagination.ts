@@ -1,4 +1,4 @@
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 interface PaginationInfo {
@@ -17,7 +17,15 @@ type Request = (
   total: number;
 }>;
 
-export function usePagination<TData>(request: Request): {
+interface Options {
+  pageSize?: number;
+  refreshDeps?: any[];
+}
+
+export function usePagination<TData>(
+  request: Request,
+  options?: Options
+): {
   data: Ref<TData[]>;
   pagination: PaginationInfo;
   handleSizeChange: (newPageSize: number) => void;
@@ -26,7 +34,7 @@ export function usePagination<TData>(request: Request): {
   const data = ref([]) as Ref<TData[]>;
   const pagination = reactive<PaginationInfo>({
     total: 0,
-    pageSize: 10,
+    pageSize: options?.pageSize ?? 10,
     currentPage: 1,
   });
 
@@ -47,9 +55,19 @@ export function usePagination<TData>(request: Request): {
     fetchData();
   }
 
+  function refresh() {
+    data.value = [];
+    pagination.currentPage = 1;
+    fetchData();
+  }
+
   onMounted(() => {
     fetchData();
   });
+
+  if (options?.refreshDeps) {
+    watch(options.refreshDeps, () => refresh(), { deep: true });
+  }
 
   return { data, pagination, handleSizeChange, handleCurrentChange };
 }
