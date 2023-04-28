@@ -30,7 +30,7 @@
                 >
               </div>
             </el-row>
-            <el-table :data="tableData">
+            <el-table :data="tableData" v-loading="loading">
               <el-table-column prop="client" label="Client name" />
               <el-table-column prop="board" label="Board name" />
               <el-table-column prop="tags" label="Tags" />
@@ -113,6 +113,7 @@ const {
   pagination,
   handleSizeChange,
   handleCurrentChange,
+  loading,
 } = usePagination<StoreData>(
   async (page, size) => {
     const res = await $api.getData(page, size);

@@ -30,8 +30,11 @@ export function usePagination<TData>(
   pagination: PaginationInfo;
   handleSizeChange: (newPageSize: number) => void;
   handleCurrentChange: (newPage: number) => void;
+  refresh: () => void;
+  loading: Ref<boolean>;
 } {
   const data = ref([]) as Ref<TData[]>;
+  const loading = ref(false);
   const pagination = reactive<PaginationInfo>({
     total: 0,
     pageSize: options?.pageSize ?? 10,
@@ -39,10 +42,17 @@ export function usePagination<TData>(
   });
 
   async function fetchData() {
-    const res = await request(pagination.currentPage, pagination.pageSize);
+    try {
+      loading.value = true;
+      const res = await request(pagination.currentPage, pagination.pageSize);
 
-    data.value = res.data as TData[];
-    pagination.total = res.total;
+      data.value = res.data as TData[];
+      pagination.total = res.total;
+    } catch (error) {
+      console.error(error);
+    } finally {
+      loading.value = false;
+    }
   }
 
   function handleSizeChange(newPageSize: number) {
@@ -69,5 +79,12 @@ export function usePagination<TData>(
     watch(options.refreshDeps, () => refresh(), { deep: true });
   }
 
-  return { data, pagination, handleSizeChange, handleCurrentChange };
+  return {
+    data,
+    pagination,
+    handleSizeChange,
+    handleCurrentChange,
+    refresh,
+    loading,
+  };
 }
