@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "element-plus": "^2.3.4",
+    "nanoid": "^4.0.2",
     "vue": "^3.2.13"
   },
   "devDependencies": {
