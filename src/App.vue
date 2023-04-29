@@ -19,10 +19,11 @@
           <div class="content-wrapper">
             <el-row justify="space-between">
               <h3>{{ menuMap[selectMenuKey] }}</h3>
-              <div>
+              <el-row class="operation-wrapper" justify="end" align="middle">
                 <el-input
                   v-model="searchValue"
                   placeholder="Search"
+                  :prefix-icon="Search"
                   class="search-input"
                 />
                 <el-button
@@ -32,9 +33,9 @@
                   @click="dialogVisible = true"
                   >Create SDK</el-button
                 >
-              </div>
+              </el-row>
             </el-row>
-            <el-table :data="tableData" v-loading="loading">
+            <el-table :data="tableData" v-loading="loading" stripe>
               <el-table-column prop="client" label="Client name" />
               <el-table-column prop="board" label="Board name" />
               <el-table-column prop="tags" label="Tags" />
@@ -59,6 +60,7 @@
               @size-change="handleSizeChange"
               @current-change="handleCurrentChange"
               layout="sizes, prev, pager, next, total"
+              class="pagination"
             />
             <el-dialog v-model="dialogVisible" title="编辑用户信息">
               <el-form
@@ -102,6 +104,7 @@ import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import type { ApiStore } from "./api";
 import { StoreData } from "./api/API";
 import { usePagination } from "./hooks/usePagination";
+import { Search } from "@element-plus/icons-vue";
 
 const defaultActiveKey = "sdk";
 
@@ -253,6 +256,19 @@ const deleteRow = async (row: StoreData) => {
 
   .content-wrapper {
     padding: 0 1rem;
+  }
+
+  .operation-wrapper {
+    width: 60%;
+
+    .search-input {
+      margin-right: 20px;
+      width: 200px;
+    }
+  }
+
+  .pagination {
+    margin-top: 10px;
   }
 }
 </style>
