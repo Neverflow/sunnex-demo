@@ -131,7 +131,7 @@ const $api: ApiStore = instance.appContext.config.globalProperties.$api;
 /** 搜索 */
 const searchValue = ref<string>("");
 /** 节流 */
-const debounceSearch = useDebounceRef(searchValue, 1000);
+const debounceSearch = useDebounceRef(searchValue, 500);
 
 /** 表格数据及分页hook */
 const {
@@ -143,7 +143,7 @@ const {
   refresh,
 } = usePagination<StoreData>(
   async (page, size) => {
-    const res = await $api.getData(page, size);
+    const res = await $api.getData(page, size, debounceSearch.value);
     return {
       data: res.data,
       page: res.currentPage,
