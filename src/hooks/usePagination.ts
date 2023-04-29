@@ -66,7 +66,6 @@ export function usePagination<TData>(
   }
 
   function refresh() {
-    data.value = [];
     pagination.currentPage = 1;
     fetchData();
   }
