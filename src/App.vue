@@ -105,6 +105,7 @@ import type { ApiStore } from "./api";
 import { StoreData } from "./api/API";
 import { usePagination } from "./hooks/usePagination";
 import { Search } from "@element-plus/icons-vue";
+import { useDebounceRef } from "./hooks/useDebounceRef";
 
 const defaultActiveKey = "sdk";
 
@@ -129,8 +130,9 @@ const $api: ApiStore = instance.appContext.config.globalProperties.$api;
 
 /** 搜索 */
 const searchValue = ref<string>("");
+/** 节流 */
+const debounceSearch = useDebounceRef(searchValue, 1000);
 
-const operationLoading = ref(false);
 /** 表格数据及分页hook */
 const {
   data: tableData,
@@ -150,9 +152,11 @@ const {
     };
   },
   {
-    refreshDeps: [searchValue],
+    refreshDeps: [debounceSearch],
   }
 );
+
+const operationLoading = ref(false);
 
 const loading = computed(() => dataLoading.value || operationLoading.value);
 
