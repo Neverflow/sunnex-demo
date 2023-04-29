@@ -50,7 +50,7 @@ export class ApiStore {
       data: filterData.slice((page - 1) * pageSize, page * pageSize),
       currentPage: page,
       pageSize,
-      total: this.store.length,
+      total: filterData.length,
     };
   }
 
