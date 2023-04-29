@@ -6,7 +6,6 @@ const boards = ["Board A", "Board B", "Board C", "Board D"];
 const tags = ["Tag A", "Tag B", "Tag C", "Tag D"];
 const requestors = ["Requestor A", "Requestor B", "Requestor C", "Requestor D"];
 const scripts = ["Script A", "Script B", "Script C", "Script D"];
-const actions = ["Action A", "Action B", "Action C", "Action D"];
 
 function getRandomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -20,7 +19,6 @@ function mockData(): StoreData {
     tags: getRandomItem(tags),
     requestor: getRandomItem(requestors),
     script: getRandomItem(scripts),
-    actions: getRandomItem(actions),
   };
 
   return data;

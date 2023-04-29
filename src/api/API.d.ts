@@ -5,5 +5,4 @@ export interface StoreData {
   tags: string;
   requestor: string;
   script: string;
-  actions: string;
 }

@@ -22,10 +22,14 @@
               <div>
                 <el-input
                   v-model="searchValue"
-                  placeholder="搜索..."
+                  placeholder="Search"
                   class="search-input"
                 />
-                <el-button type="primary" color="#43b539" style="color: white"
+                <el-button
+                  type="primary"
+                  color="#43b539"
+                  style="color: white"
+                  @click="dialogVisible = true"
                   >Create SDK</el-button
                 >
               </div>
@@ -37,20 +41,14 @@
               <el-table-column prop="requestor" label="Requestor" />
               <el-table-column prop="script" label="SDK script" />
               <el-table-column prop="actions" label="Actions">
-                <!-- <template #default="{ row }">
+                <template #default="{ row }">
                   <el-button type="primary" @click="editRow(row)"
                     >编辑</el-button
                   >
-                  <el-popconfirm
-                    title="确定删除？"
-                    placement="top-start"
-                    @confirm="deleteRow(row)"
+                  <el-button type="danger" @click="deleteRow(row)"
+                    >删除</el-button
                   >
-                    <el-button type="danger" icon="el-icon-delete"
-                      >删除</el-button
-                    >
-                  </el-popconfirm>
-                </template> -->
+                </template>
               </el-table-column>
             </el-table>
             <el-pagination
@@ -62,8 +60,29 @@
               @current-change="handleCurrentChange"
               layout="sizes, prev, pager, next, total"
             />
-            <el-dialog v-model:visible="dialogVisible" title="编辑用户信息">
-              <el-form :model="editForm" ref="ruleFormRef" label-width="80px">
+            <el-dialog v-model="dialogVisible" title="编辑用户信息">
+              <el-form
+                :label-width="120"
+                :model="editForm"
+                ref="ruleFormRef"
+                v-loading="formLoading"
+                :rules="rules"
+              >
+                <el-form-item label="Client name" prop="client">
+                  <el-input v-model="editForm.client" />
+                </el-form-item>
+                <el-form-item label="Board name" prop="board">
+                  <el-input v-model="editForm.board" />
+                </el-form-item>
+                <el-form-item label="Tags" prop="tags">
+                  <el-input v-model="editForm.tags" />
+                </el-form-item>
+                <el-form-item label="Requestor" prop="requestor">
+                  <el-input v-model="editForm.requestor" />
+                </el-form-item>
+                <el-form-item label="SDK script" prop="script">
+                  <el-input v-model="editForm.script" />
+                </el-form-item>
               </el-form>
               <template #footer>
                 <el-button @click="dialogVisible = false">取消</el-button>
@@ -78,8 +97,8 @@
 </template>
 
 <script lang="ts" setup>
-import { getCurrentInstance, reactive, ref } from "vue";
-import { ElMessage, ElMessageBox, FormInstance } from "element-plus";
+import { computed, getCurrentInstance, reactive, ref, watch } from "vue";
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import type { ApiStore } from "./api";
 import { StoreData } from "./api/API";
 import { usePagination } from "./hooks/usePagination";
@@ -93,6 +112,8 @@ const menuMap = {
 
 type MenuKey = keyof typeof menuMap;
 
+type FormData = Omit<StoreData, "id">;
+
 const selectMenuKey = ref<MenuKey>(defaultActiveKey);
 
 const handleSelect = (index: MenuKey) => {
@@ -102,22 +123,22 @@ const handleSelect = (index: MenuKey) => {
 /** 获取install的api实例 */
 const instance = getCurrentInstance()!;
 const $api: ApiStore = instance.appContext.config.globalProperties.$api;
-console.log("$api", $api);
 
 /** 搜索 */
 const searchValue = ref<string>("");
 
+const operationLoading = ref(false);
 /** 表格数据及分页hook */
 const {
   data: tableData,
   pagination,
   handleSizeChange,
   handleCurrentChange,
-  loading,
+  loading: dataLoading,
+  refresh,
 } = usePagination<StoreData>(
   async (page, size) => {
     const res = await $api.getData(page, size);
-    console.log("res", res);
     return {
       data: res.data,
       page: res.currentPage,
@@ -130,41 +151,91 @@ const {
   }
 );
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const addNew = () => {};
+const loading = computed(() => dataLoading.value || operationLoading.value);
+
+const dialogVisible = ref<boolean>(false);
+
 const ruleFormRef = ref<FormInstance>();
-const editForm = reactive<Omit<StoreData, "id">>({
+const editForm = reactive<FormData>({
   client: "",
   board: "",
   tags: "",
   requestor: "",
   script: "",
-  actions: "",
 });
+const changeForm = (data: FormData) => {
+  Object.keys(editForm).forEach((key) => {
+    const formKey = key as keyof FormData;
+    editForm[formKey] = data[formKey];
+  });
+};
+
+const rules: FormRules = {
+  client: [{ required: true, trigger: "blur" }],
+  board: [{ required: true, trigger: "blur" }],
+  tags: [],
+  requestor: [{ required: true, trigger: "blur" }],
+  script: [{ required: true, trigger: "blur" }],
+};
+
+const editId = ref("");
+/** reset form effect */
+watch(dialogVisible, (newVal) => {
+  if (!newVal) {
+    changeForm({
+      client: "",
+      board: "",
+      tags: "",
+      requestor: "",
+      script: "",
+    });
+  }
+});
+const formLoading = ref(false);
 const saveForm = async () => {
   if (ruleFormRef.value) {
     try {
+      formLoading.value = true;
       await ruleFormRef.value.validate();
-      // TODO 执行保存逻辑
+      if (editId.value) {
+        await $api.update({
+          ...editForm,
+          id: editId.value,
+        });
+      } else {
+        await $api.addNew(editForm);
+      }
+
       ElMessage.success("保存成功");
+      formLoading.value = false;
       dialogVisible.value = false;
+      editId.value = "";
+      refresh();
     } catch (error) {
       console.log(error);
     }
   }
 };
-const dialogVisible = ref<boolean>(false);
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+
 const editRow = (row: StoreData) => {
   dialogVisible.value = true;
+  editId.value = row.id;
+  changeForm(row);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 const deleteRow = async (row: StoreData) => {
-  await ElMessageBox.confirm("Confirm to delelte data?", "Confirm", {
-    type: "warning",
-  });
-  console.log("todo delete");
+  try {
+    await ElMessageBox.confirm("Confirm to delelte data?", "Confirm", {
+      type: "warning",
+    });
+    operationLoading.value = true;
+    await $api.delete(row.id);
+    refresh();
+  } catch (error) {
+    console.log(error);
+  } finally {
+    operationLoading.value = false;
+  }
 };
 </script>
 
