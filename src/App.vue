@@ -36,10 +36,31 @@
               </el-row>
             </el-row>
             <el-table :data="tableData" v-loading="loading" stripe>
-              <el-table-column prop="client" label="Client name" />
-              <el-table-column prop="board" label="Board name" />
-              <el-table-column prop="tags" label="Tags" />
-              <el-table-column prop="requestor" label="Requestor" />
+              <el-table-column prop="client" label="Client name">
+                <template #default="{ row }">
+                  <high-light-text
+                    :search="debounceSearch"
+                    :text="row.client"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column prop="board" label="Board name">
+                <template #default="{ row }">
+                  <high-light-text :search="debounceSearch" :text="row.board" />
+                </template>
+              </el-table-column>
+              <el-table-column prop="tags" label="Tags">
+                <template #default="{ row }">
+                  <high-light-text :search="debounceSearch" :text="row.tags" />
+                </template>
+              </el-table-column>
+              <el-table-column prop="requestor" label="Requestor"
+                ><template #default="{ row }">
+                  <high-light-text
+                    :search="debounceSearch"
+                    :text="row.requestor"
+                  /> </template
+              ></el-table-column>
               <el-table-column prop="script" label="SDK script" />
               <el-table-column prop="actions" label="Actions">
                 <template #default="{ row }">
@@ -99,13 +120,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, getCurrentInstance, reactive, ref, watch } from "vue";
+import { Search } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
+import { computed, getCurrentInstance, reactive, ref, watch } from "vue";
 import type { ApiStore } from "./api";
 import { StoreData } from "./api/API";
-import { usePagination } from "./hooks/usePagination";
-import { Search } from "@element-plus/icons-vue";
 import { useDebounceRef } from "./hooks/useDebounceRef";
+import { usePagination } from "./hooks/usePagination";
+import HighLightText from "./components/HighLightText.vue";
 
 const defaultActiveKey = "sdk";
 
