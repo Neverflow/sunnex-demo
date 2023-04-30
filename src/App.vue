@@ -21,7 +21,7 @@
               <h3>{{ menuMap[selectMenuKey] }}</h3>
               <el-row class="operation-wrapper" justify="end" align="middle">
                 <el-input
-                  v-model="searchValue"
+                  v-model.trim="searchValue"
                   placeholder="Search"
                   :prefix-icon="Search"
                   class="search-input"
