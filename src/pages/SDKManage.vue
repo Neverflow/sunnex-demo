@@ -5,7 +5,7 @@
       <el-row class="operation-wrapper" justify="end" align="middle">
         <el-input
           v-model.trim="searchValue"
-          placeholder="Search"
+          placeholder="Search client name, board name, tags, requestor"
           :prefix-icon="Search"
           class="search-input"
         />
@@ -14,7 +14,9 @@
           color="#43b539"
           style="color: white"
           @click="dialogVisible = true"
-          >Create SDK</el-button
+          :icon="Plus"
+        >
+          Create SDK</el-button
         >
       </el-row>
     </el-row>
@@ -44,8 +46,8 @@
       <el-table-column prop="script" label="SDK script" />
       <el-table-column prop="actions" label="Actions">
         <template #default="{ row }">
-          <el-button type="primary" @click="editRow(row)">编辑</el-button>
-          <el-button type="danger" @click="deleteRow(row)">删除</el-button>
+          <el-button @click="editRow(row)" :icon="Edit" link></el-button>
+          <el-button @click="deleteRow(row)" :icon="Delete" link></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -59,7 +61,7 @@
       layout="sizes, prev, pager, next, total"
       class="pagination"
     />
-    <el-dialog v-model="dialogVisible" title="编辑用户信息">
+    <el-dialog v-model="dialogVisible" :title="modalTitle">
       <el-form
         :label-width="120"
         :model="editForm"
@@ -91,7 +93,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { Search } from "@element-plus/icons-vue";
+import { Search, Plus, Delete, Edit } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import { computed, getCurrentInstance, reactive, ref, watch } from "vue";
 import type { ApiStore } from "@/api";
@@ -158,12 +160,13 @@ const changeForm = (data: FormData) => {
 const rules: FormRules = {
   client: [{ required: true, trigger: "blur" }],
   board: [{ required: true, trigger: "blur" }],
-  tags: [],
+  tags: [{ required: true, trigger: "blur" }],
   requestor: [{ required: true, trigger: "blur" }],
-  script: [{ required: true, trigger: "blur" }],
+  script: [],
 };
 
 const editId = ref("");
+const modalTitle = computed(() => (editId.value ? "Edit SDK" : "Create SDK"));
 /** reset form effect */
 watch(dialogVisible, (newVal) => {
   if (!newVal) {
@@ -174,6 +177,7 @@ watch(dialogVisible, (newVal) => {
       requestor: "",
       script: "",
     });
+    editId.value = "";
   }
 });
 const formLoading = ref(false);
@@ -240,7 +244,7 @@ const deleteRow = async (row: StoreData) => {
 
     .search-input {
       margin-right: 20px;
-      width: 200px;
+      width: 400px;
     }
   }
 
