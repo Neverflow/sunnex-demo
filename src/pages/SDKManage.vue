@@ -6,16 +6,24 @@
         <el-input
           v-model.trim="searchValue"
           placeholder="Search client name, board name, tags, requestor"
-          :prefix-icon="Search"
           class="search-input"
-        />
+        >
+          <template #prepend>
+            <svg-icon
+              name="ESM@iconset_Search"
+              color="#a8abb2"
+              size="20"
+            ></svg-icon>
+          </template>
+        </el-input>
+
         <el-button
           type="primary"
           color="#43b539"
           style="color: white"
           @click="dialogVisible = true"
-          :icon="Plus"
         >
+          <svg-icon name="ESM@iconset_New" color="#ffffff" size="20"></svg-icon>
           Create SDK</el-button
         >
       </el-row>
@@ -46,8 +54,20 @@
       <el-table-column prop="script" label="SDK script" />
       <el-table-column prop="actions" label="Actions">
         <template #default="{ row }">
-          <el-button @click="editRow(row)" :icon="Edit" link></el-button>
-          <el-button @click="deleteRow(row)" :icon="Delete" link></el-button>
+          <el-button @click="editRow(row)" link>
+            <svg-icon
+              name="ESM@iconset_Edit"
+              color="#a8abb2"
+              size="20"
+            ></svg-icon
+          ></el-button>
+          <el-button @click="deleteRow(row)" link>
+            <svg-icon
+              name="ESM@iconset_Delete"
+              color="#a8abb2"
+              size="20"
+            ></svg-icon>
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,8 +106,8 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveForm">保存</el-button>
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="saveForm">Save</el-button>
       </template>
     </el-dialog>
   </div>
@@ -101,6 +121,7 @@ import { StoreData } from "@/api/API";
 import { useDebounceRef } from "@/hooks/useDebounceRef";
 import { usePagination } from "@/hooks/usePagination";
 import HighLightText from "@/components/HighLightText.vue";
+import SvgIcon from "@/components/SvgIcon.vue";
 
 type FormData = Omit<StoreData, "id">;
 
